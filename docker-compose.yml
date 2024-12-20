@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  wallet-app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/walletdb
+      SPRING_DATASOURCE_USERNAME: wallet-user
+      SPRING_DATASOURCE_PASSWORD: password
+    networks:
+      - wallet-net
+
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: wallet-user     # Создание пользователя для работы с приложением
+      POSTGRES_PASSWORD: password    # Пароль для пользователя wallet-user
+      POSTGRES_DB: walletdb          # Имя базы данных
+    networks:
+      - wallet-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "wallet-user", "-d", "walletdb"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+volumes:
+  db_data:  # Хранение данных базы данных
+    driver: local
+
+networks:
+  wallet-net:
+    driver: bridge
