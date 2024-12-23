@@ -7,6 +7,8 @@ import com.example.walletapp.exception.InsufficientFundsException;
 import com.example.walletapp.exception.UnsupportedOperationTypeException;
 import com.example.walletapp.exception.WalletNotFoundException;
 import com.example.walletapp.service.WalletService;
+import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/wallets")
+@RequestMapping("/api/v1/wallet")
 public class WalletController {
 
     private final WalletService walletService;
@@ -27,8 +29,8 @@ public class WalletController {
         this.walletService = walletService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> updateWallet(@RequestBody WalletRequest request) {
+    @PostMapping("/operation")
+    public ResponseEntity<String> processWalletOperation(@Valid @RequestBody WalletRequest request) {
         try {
             if (request.getOperationType() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -53,18 +55,18 @@ public class WalletController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Wallet> createWallet(@RequestBody WalletRequest request) {
-        Wallet newWallet = walletService.createNewWallet(request.getAmount());
+    public ResponseEntity<Wallet> createWallet(@RequestBody WalletRequest walletRequest) {
+        Wallet newWallet = walletService.createNewWallet(walletRequest.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(newWallet);
     }
 
-    @GetMapping("/{walletId}")
-    public ResponseEntity<?> getWalletBalance(@PathVariable UUID walletId) {
+    @GetMapping("/balance/{walletId}")
+    public ResponseEntity<BigDecimal> getWalletBalance(@PathVariable UUID walletId) {
         try {
-            double balance = walletService.getWalletBalance(walletId);
+            BigDecimal balance = walletService.getWalletBalance(walletId);
             return ResponseEntity.ok(balance);
         } catch (WalletNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 }
