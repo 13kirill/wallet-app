@@ -1,6 +1,7 @@
 package com.example.walletapp.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -12,7 +13,7 @@ public class Wallet {
     private UUID id;
 
     @Column(nullable = false)
-    private double balance;
+    private BigDecimal balance;
 
     // Getters and setters
     public UUID getId() {
@@ -23,11 +24,11 @@ public class Wallet {
         this.id = id;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 }

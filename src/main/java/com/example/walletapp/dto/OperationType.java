@@ -2,5 +2,9 @@ package com.example.walletapp.dto;
 
 public enum OperationType {
     DEPOSIT,
-    WITHDRAW
+    WITHDRAW;
+
+    public String getOperation() {
+        return name();
+    }
 }
