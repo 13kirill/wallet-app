@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0-clean-database
+      author: ZubkovKA
+      context: clean
+      changes:
+        - sql:
+            comment: "Удаление схемы public"
+            sql: |
+              DROP TABLE IF EXISTS WALLET;

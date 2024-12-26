@@ -1,5 +1,9 @@
 package com.example.walletapp.service;
 
+import static com.example.walletapp.constants.ErrorMessages.INSUFFICIENT_FUNDS_IN_WALLET;
+import static com.example.walletapp.constants.ErrorMessages.UNSUPPORTED_OPERATION_TYPE;
+import static com.example.walletapp.constants.ErrorMessages.WALLET_NOT_FOUND;
+
 import com.example.walletapp.dto.WalletRequest;
 import com.example.walletapp.entity.Wallet;
 import com.example.walletapp.exception.InsufficientFundsException;
@@ -23,7 +27,7 @@ public class WalletService {
     @Transactional
     public Wallet processWalletOperation(WalletRequest request) {
         Wallet wallet = walletRepository.findByIdWithLock(request.getWalletId())
-            .orElseThrow(() -> new WalletNotFoundException("Wallet not found: " + request.getWalletId()));
+            .orElseThrow(() -> new WalletNotFoundException(WALLET_NOT_FOUND + request.getWalletId()));
 
         switch (request.getOperationType()) {
             case DEPOSIT:
@@ -31,12 +35,12 @@ public class WalletService {
                 break;
             case WITHDRAW:
                 if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
-                    throw new InsufficientFundsException("Insufficient funds in wallet: " + request.getWalletId());
+                    throw new InsufficientFundsException(INSUFFICIENT_FUNDS_IN_WALLET + request.getWalletId());
                 }
                 wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
                 break;
             default:
-                throw new UnsupportedOperationTypeException("Unsupported operation type: " + request.getOperationType());
+                throw new UnsupportedOperationTypeException(UNSUPPORTED_OPERATION_TYPE + request.getOperationType());
         }
 
         return walletRepository.save(wallet);
@@ -45,10 +49,15 @@ public class WalletService {
 
     public BigDecimal getWalletBalance(UUID walletId) {
         Wallet wallet = walletRepository.findById(walletId)
-            .orElseThrow(() -> new WalletNotFoundException("Wallet not found: " + walletId));
+            .orElseThrow(() -> new WalletNotFoundException(WALLET_NOT_FOUND + walletId));
         return wallet.getBalance();
     }
 
+    @Transactional
+    public Wallet getWallet(UUID walletId) {
+        return walletRepository.findByIdWithLock(walletId)
+            .orElseThrow(() -> new WalletNotFoundException(WALLET_NOT_FOUND + walletId));
+    }
 
     @Transactional
     public Wallet createNewWallet(BigDecimal initialBalance) {

@@ -1,5 +1,8 @@
 package com.example.walletapp;
 
+import static com.example.walletapp.constants.ErrorMessages.OPERATION_TYPE_CANNOT_BE_EMPTY;
+import static com.example.walletapp.constants.ErrorMessages.UNSUPPORTED_OPERATION_TYPE;
+
 import com.example.walletapp.dto.OperationType;
 import com.example.walletapp.exception.UnsupportedOperationTypeException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -14,13 +17,13 @@ public class OperationTypeDeserializer extends JsonDeserializer<OperationType> {
         String value = p.getText().trim();
 
         if (value.isEmpty()) {
-            throw new UnsupportedOperationTypeException("Operation type cannot be empty");
+            throw new UnsupportedOperationTypeException(OPERATION_TYPE_CANNOT_BE_EMPTY);
         }
 
         try {
             return OperationType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOperationTypeException("Unsupported operation type: " + value);
+            throw new UnsupportedOperationTypeException(UNSUPPORTED_OPERATION_TYPE + value);
         }
     }
 }

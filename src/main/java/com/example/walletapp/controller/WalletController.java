@@ -1,5 +1,6 @@
 package com.example.walletapp.controller;
 
+import com.example.walletapp.dto.CreateWalletRequest;
 import com.example.walletapp.dto.OperationType;
 import com.example.walletapp.dto.WalletRequest;
 import com.example.walletapp.entity.Wallet;
@@ -31,42 +32,22 @@ public class WalletController {
 
     @PostMapping("/operation")
     public ResponseEntity<String> processWalletOperation(@Valid @RequestBody WalletRequest request) {
-        try {
-            if (request.getOperationType() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Operation type must be provided");
-            }
+        walletService.getWallet(request.getWalletId());
+        walletService.processWalletOperation(request);
 
-            walletService.processWalletOperation(request);
-
-            String operationMessage = request.getOperationType() == OperationType.DEPOSIT
-                ? "Deposit successful"
-                : "Withdrawal successful";
-            return ResponseEntity.ok(operationMessage);
-
-        } catch (WalletNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (InsufficientFundsException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (UnsupportedOperationTypeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Unsupported operation type: " + request.getOperationType());
-        }
+        String operationMessage = request.getOperationType().getMessage();
+        return ResponseEntity.ok(operationMessage);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Wallet> createWallet(@RequestBody WalletRequest walletRequest) {
-        Wallet newWallet = walletService.createNewWallet(walletRequest.getAmount());
+    public ResponseEntity<Wallet> createWallet(@Valid @RequestBody CreateWalletRequest request) {
+        Wallet newWallet = walletService.createNewWallet(request.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(newWallet);
     }
 
     @GetMapping("/balance/{walletId}")
     public ResponseEntity<BigDecimal> getWalletBalance(@PathVariable UUID walletId) {
-        try {
-            BigDecimal balance = walletService.getWalletBalance(walletId);
-            return ResponseEntity.ok(balance);
-        } catch (WalletNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+        BigDecimal balance = walletService.getWalletBalance(walletId);
+        return ResponseEntity.ok(balance);
     }
 }

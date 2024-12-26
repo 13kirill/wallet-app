@@ -1,19 +1,5 @@
 databaseChangeLog:
-  - changeSet:
-      id: 1
-      author: developer
-      changes:
-        - createTable:
-            tableName: wallet
-            schemaName: public
-            columns:
-              - column:
-                  name: id
-                  type: UUID
-                  constraints:
-                    primaryKey: true
-              - column:
-                  name: balance
-                  type: DECIMAL(15,2)
-                  constraints:
-                    nullable: false
+  - include:
+      file: db/changelog/clean-database.yaml
+  - include:
+      file: db/changelog/create-wallet-table.yaml

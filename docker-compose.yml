@@ -1,40 +1,34 @@
 version: '3.8'
 
 services:
-  wallet-app:
+  walletapp:
     build: .
+    container_name: walletapp
     ports:
-      - "8080:8080"
+      - "8080:8080"  # Прокси на порт 8080
     depends_on:
-      - postgres
+      - db
+    command: [ "./wait-for-it.sh", "db:5432", "--", "java", "-jar", "/path/to/your/app.jar" ]
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/walletdb
-      SPRING_DATASOURCE_USERNAME: wallet-user
-      SPRING_DATASOURCE_PASSWORD: password
-    networks:
-      - wallet-net
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/walletdb
+      - SPRING_DATASOURCE_USERNAME=wallet-user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_DRIVER_CLASSNAME=org.postgresql.Driver
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update  # Обновление схемы базы данных
+      - SPRING_JPA_SHOW_SQL=true  # Показывать SQL-запросы в логах
 
-  postgres:
-    image: postgres:15
-    ports:
-      - "5432:5432"
+  db:
+    image: postgres:13
+    container_name: wallet-db
     environment:
-      POSTGRES_USER: wallet-user     # Создание пользователя для работы с приложением
-      POSTGRES_PASSWORD: password    # Пароль для пользователя wallet-user
-      POSTGRES_DB: walletdb          # Имя базы данных
-    networks:
-      - wallet-net
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "wallet-user", "-d", "walletdb"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
-      start_period: 30s
+      POSTGRES_USER: wallet-user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: walletdb
+    volumes:
+      - wallet_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Прокси на порт 5432 для PostgreSQL
 
 volumes:
-  db_data:  # Хранение данных базы данных
+  wallet_data:
     driver: local
-
-networks:
-  wallet-net:
-    driver: bridge
